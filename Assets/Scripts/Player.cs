@@ -16,6 +16,7 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
+        #region Movement
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
         Vector3 movementVector = new Vector3 (horizontalInput, 0, verticalInput) * movementSpeed;
@@ -23,6 +24,7 @@ public class Player : MonoBehaviour
         transform.position += movementVector * Time.deltaTime;
         transform.LookAt(movementVector);
         AnimatorController.SetFloat("Speed", movementVector.magnitude);
+        #endregion
 
         if (isDead)
         {
