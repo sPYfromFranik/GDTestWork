@@ -8,6 +8,7 @@ public class Player : MonoBehaviour
     public float Damage;
     public float AtackSpeed;
     public float AttackRange = 2;
+    [SerializeField] private float movementSpeed;
 
     private float lastAttackTime = 0;
     private bool isDead = false;
@@ -15,6 +16,14 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
+        float horizontalInput = Input.GetAxis("Horizontal");
+        float verticalInput = Input.GetAxis("Vertical");
+        Vector3 movementVector = new Vector3 (horizontalInput, 0, verticalInput) * movementSpeed;
+        movementVector += Vector3.ClampMagnitude(movementVector, movementSpeed);
+        transform.position += movementVector * Time.deltaTime;
+        transform.LookAt(movementVector);
+        AnimatorController.SetFloat("Speed", movementVector.magnitude);
+
         if (isDead)
         {
             return;
