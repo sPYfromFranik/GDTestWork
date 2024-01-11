@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -11,6 +12,7 @@ public class SceneManager : MonoBehaviour
     public List<Enemie> Enemies;
     public GameObject Lose;
     public GameObject Win;
+    [SerializeField] private TextMeshProUGUI waveText;
 
     private int currWave = 0;
     [SerializeField] private LevelConfig Config;
@@ -18,6 +20,7 @@ public class SceneManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        waveText.text = "Wave: " + currWave + " / " + Config.Waves.Length.ToString();
     }
 
     private void Start()
@@ -59,7 +62,7 @@ public class SceneManager : MonoBehaviour
             Instantiate(character, pos, Quaternion.identity);
         }
         currWave++;
-
+        waveText.text = "Wave: " + currWave + " / " + Config.Waves.Length.ToString();
     }
 
     public void Reset()
