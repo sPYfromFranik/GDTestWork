@@ -19,7 +19,7 @@ public class Enemie : MonoBehaviour
     private bool isDead = false;
 
 
-    private void Start()
+    protected virtual void Start()
     {
         SceneManager.Instance.AddEnemie(this);
         Agent.SetDestination(SceneManager.Instance.Player.transform.position);
@@ -63,7 +63,7 @@ public class Enemie : MonoBehaviour
 
 
 
-    private void Die()
+    protected virtual void Die()
     {
         SceneManager.Instance.RemoveEnemie(this);
         isDead = true;
