@@ -9,6 +9,7 @@ public class Enemie : MonoBehaviour
     public float Damage;
     public float AtackSpeed;
     public float AttackRange = 2;
+    [SerializeField] private float healthBoostWhenKilled;
 
 
     public Animator AnimatorController;
@@ -47,7 +48,7 @@ public class Enemie : MonoBehaviour
             if (Time.time - lastAttackTime > AtackSpeed)
             {
                 lastAttackTime = Time.time;
-                SceneManager.Instance.Player.Hp -= Damage;
+                SceneManager.Instance.Player.ChangeHealth(-Damage);
                 AnimatorController.SetTrigger("Attack");
             }
         }
@@ -67,6 +68,7 @@ public class Enemie : MonoBehaviour
         SceneManager.Instance.RemoveEnemie(this);
         isDead = true;
         AnimatorController.SetTrigger("Die");
+        SceneManager.Instance.Player.ChangeHealth(healthBoostWhenKilled);
     }
 
 }

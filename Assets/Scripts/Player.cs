@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    public float Hp;
+    private float hp=10;
     public float Damage;
     [SerializeField] private float superAttackDamage;
     public float AtackSpeed;
@@ -21,7 +21,7 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
-        if (Hp <= 0)
+        if (hp <= 0)
         {
             Die();
             return;
@@ -181,5 +181,10 @@ public class Player : MonoBehaviour
                     return true;
         }
         return false;
+    }
+
+    public void ChangeHealth(float healthChange)
+    {
+        hp += healthChange;
     }
 }
