@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Player : MonoBehaviour
@@ -12,32 +13,51 @@ public class Player : MonoBehaviour
 
     private float lastAttackTime = 0;
     private bool isDead = false;
+    private bool canAttack;
+    private bool powerAttackCharged = true;
     public Animator AnimatorController;
 
     private void Update()
     {
-        #region Movement
-        float horizontalInput = Input.GetAxis("Horizontal");
-        float verticalInput = Input.GetAxis("Vertical");
-        Vector3 movementVector = new Vector3 (horizontalInput, 0, verticalInput) * movementSpeed;
-        movementVector += Vector3.ClampMagnitude(movementVector, movementSpeed);
-        transform.position += movementVector * Time.deltaTime;
-        transform.LookAt(movementVector);
-        AnimatorController.SetFloat("Speed", movementVector.magnitude);
-        #endregion
-
-        if (isDead)
-        {
-            return;
-        }
-
         if (Hp <= 0)
         {
             Die();
             return;
         }
 
+        if (!isDead)
+        {
+            #region Movement
+            float horizontalInput = Input.GetAxis("Horizontal");
+            float verticalInput = Input.GetAxis("Vertical");
+            Vector3 movementVector = new Vector3(horizontalInput, 0, verticalInput) * movementSpeed;
+            movementVector += Vector3.ClampMagnitude(movementVector, movementSpeed);
+            transform.position += movementVector * Time.deltaTime;
+            AnimatorController.SetFloat("Speed", movementVector.magnitude);
+            transform.LookAt(transform.position + movementVector * Time.deltaTime);
+            #endregion
 
+            #region Attacking
+            bool stillAttacking = false;
+            foreach (AnimatorClipInfo animation in AnimatorController.GetCurrentAnimatorClipInfo(0))
+                if (animation.clip.name == "sword attack")
+                    stillAttacking = true;
+            foreach (AnimatorClipInfo animation in AnimatorController.GetNextAnimatorClipInfo(0))
+                if (animation.clip.name == "sword attack")
+                    stillAttacking = true;
+            if (stillAttacking)
+                canAttack = false;
+            else
+                canAttack = true;
+            if (canAttack && Input.GetKeyDown(KeyCode.Mouse0))
+            {
+                RegularAttack();
+            }
+            #endregion
+        }
+        else
+            return;
+        /*
         var enemies = SceneManager.Instance.Enemies;
         Enemie closestEnemie = null;
 
@@ -80,7 +100,7 @@ public class Player : MonoBehaviour
                     AnimatorController.SetTrigger("Attack");
                 }
             }
-        }
+        }*/
     }
 
     private void Die()
@@ -89,6 +109,49 @@ public class Player : MonoBehaviour
         AnimatorController.SetTrigger("Die");
 
         SceneManager.Instance.GameOver();
+    }
+
+    /// <summary>
+    /// Finds the closest enemy to the player
+    /// </summary>
+    /// <returns>Enemy of type Enemie or null if the list is empty</returns>
+    private Enemie FindClosestEnemy()
+    {
+        if (SceneManager.Instance.Enemies.Any())
+        {
+            var enemies = SceneManager.Instance.Enemies;
+            Enemie closestEnemy;
+            closestEnemy = enemies[0];
+            foreach (var enemy in enemies)
+            {
+                float distanceToEnemy = Vector3.Distance(transform.position, enemy.transform.position);
+                float distanceToClosestEnemy = Vector3.Distance(transform.position, closestEnemy.transform.position);
+                if (distanceToEnemy < distanceToClosestEnemy)
+                    closestEnemy = enemy;
+            }
+            return closestEnemy;
+        }
+        return null;
+    }
+
+    private void RegularAttack()
+    {
+        AnimatorController.SetTrigger("Attack");
+        canAttack = false;
+        Enemie enemyToAttack;
+        if (SceneManager.Instance.Enemies.Any())
+        {
+            enemyToAttack = FindClosestEnemy();
+            if (enemyToAttack != null)
+            {
+                var distanceToEnemy = Vector3.Distance(transform.position, enemyToAttack.transform.position);
+                if (distanceToEnemy < AttackRange)
+                {
+                    transform.LookAt(enemyToAttack.transform.position);
+                    enemyToAttack.Hp -= Damage;
+                }
+            }
+        }
     }
 
 
