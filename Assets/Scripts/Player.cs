@@ -12,7 +12,7 @@ public class Player : MonoBehaviour
     public float AttackRange = 2;
     [SerializeField] private float movementSpeed;
     [SerializeField] private float superAttackCooldownTime;
-    private float superAttackTimer = 0;
+    public float superAttackTimer { get; private set; } = 0;
     private bool superAttackCharged;
 
     private float lastAttackTime = 0;
@@ -171,7 +171,7 @@ public class Player : MonoBehaviour
         }
     }
 
-    private bool EnemyInRange()
+    public bool EnemyInRange()
     {
         if (SceneManager.Instance.Enemies.Any())
         {
