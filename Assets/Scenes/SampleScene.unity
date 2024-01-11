@@ -1216,7 +1216,7 @@ MonoBehaviour:
   fillImage: {fileID: 184638923}
   player: {fileID: 1243299936542471090}
   inRangeSprite: {fileID: 21300000, guid: 4f4d0a26aa60b0d4f87ae20109c57751, type: 3}
-  outRangeSprite: {fileID: 21300000, guid: 8b87ceb86979e9e45bb2f5c94cdab7f5, type: 3}
+  outRangeSprite: {fileID: 21300000, guid: 17a88d9be9627d3409358315bd082e88, type: 3}
 --- !u!1 &1760445893
 GameObject:
   m_ObjectHideFlags: 0
