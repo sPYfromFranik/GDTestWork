@@ -7,14 +7,16 @@ public class Player : MonoBehaviour
 {
     public float Hp;
     public float Damage;
+    [SerializeField] private float superAttackDamage;
     public float AtackSpeed;
     public float AttackRange = 2;
     [SerializeField] private float movementSpeed;
+    [SerializeField] private float superAttackCooldownTime;
+    private float superAttackTimer = 0;
+    private bool superAttackCharged;
 
     private float lastAttackTime = 0;
     private bool isDead = false;
-    private bool canAttack;
-    private bool powerAttackCharged = true;
     public Animator AnimatorController;
 
     private void Update()
@@ -38,20 +40,21 @@ public class Player : MonoBehaviour
             #endregion
 
             #region Attacking
-            bool stillAttacking = false;
-            foreach (AnimatorClipInfo animation in AnimatorController.GetCurrentAnimatorClipInfo(0))
-                if (animation.clip.name == "sword attack")
-                    stillAttacking = true;
-            foreach (AnimatorClipInfo animation in AnimatorController.GetNextAnimatorClipInfo(0))
-                if (animation.clip.name == "sword attack")
-                    stillAttacking = true;
-            if (stillAttacking)
-                canAttack = false;
-            else
-                canAttack = true;
-            if (canAttack && Input.GetKeyDown(KeyCode.Mouse0))
+            if (Input.GetKeyDown(KeyCode.Mouse0) && CanAttack())
             {
-                RegularAttack();
+                Attack("Attack", Damage);
+            }
+
+            if (superAttackTimer > 0)
+                superAttackTimer -= Time.deltaTime;
+            else if (superAttackTimer <= 0)
+                superAttackCharged = true;
+
+            if (Input.GetKeyDown(KeyCode.Mouse1) && EnemyInRange() && CanAttack() && superAttackCharged)
+            {
+                superAttackCharged = false;
+                superAttackTimer = superAttackCooldownTime;
+                Attack("SuperAttack", superAttackDamage);
             }
             #endregion
         }
@@ -110,6 +113,24 @@ public class Player : MonoBehaviour
 
         SceneManager.Instance.GameOver();
     }
+    /// <summary>
+    /// Checks if animations "sword attack" and "sword double attack" are currently played or queued to play
+    /// </summary>
+    /// <returns>True if player can attack. False if player can not</returns>
+    private bool CanAttack()
+    {
+        bool stillAttacking = false;
+        foreach (AnimatorClipInfo animation in AnimatorController.GetCurrentAnimatorClipInfo(0))
+            if (animation.clip.name == "sword attack" || animation.clip.name == "sword double attack")
+                stillAttacking = true;
+        foreach (AnimatorClipInfo animation in AnimatorController.GetNextAnimatorClipInfo(0))
+            if (animation.clip.name == "sword attack" || animation.clip.name == "sword double attack")
+                stillAttacking = true;
+        if (stillAttacking)
+            return false;
+        else
+            return true;
+    }
 
     /// <summary>
     /// Finds the closest enemy to the player
@@ -134,25 +155,31 @@ public class Player : MonoBehaviour
         return null;
     }
 
-    private void RegularAttack()
+    private void Attack(string attackType, float damage)
     {
-        AnimatorController.SetTrigger("Attack");
-        canAttack = false;
+        AnimatorController.SetTrigger(attackType);
         Enemie enemyToAttack;
-        if (SceneManager.Instance.Enemies.Any())
+        enemyToAttack = FindClosestEnemy();
+        if (enemyToAttack != null)
         {
-            enemyToAttack = FindClosestEnemy();
-            if (enemyToAttack != null)
+            var distanceToEnemy = Vector3.Distance(transform.position, enemyToAttack.transform.position);
+            if (distanceToEnemy < AttackRange)
             {
-                var distanceToEnemy = Vector3.Distance(transform.position, enemyToAttack.transform.position);
-                if (distanceToEnemy < AttackRange)
-                {
-                    transform.LookAt(enemyToAttack.transform.position);
-                    enemyToAttack.Hp -= Damage;
-                }
+                transform.LookAt(enemyToAttack.transform.position);
+                enemyToAttack.Hp -= damage;
             }
         }
     }
 
-
+    private bool EnemyInRange()
+    {
+        if (SceneManager.Instance.Enemies.Any())
+        {
+            var enemies = SceneManager.Instance.Enemies;
+            foreach (var enemy in enemies)
+                if (Vector3.Distance(transform.position, enemy.transform.position) < AttackRange)
+                    return true;
+        }
+        return false;
+    }
 }
