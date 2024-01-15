@@ -21,7 +21,7 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
-        if (hp <= 0)
+        if (hp <= 0 && !isDead)
         {
             Die();
             return;
